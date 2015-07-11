@@ -45,7 +45,10 @@ u'stats':
 '''
 
 # LOL API credentials
-access_token_key = "71be2bcb-e5de-4784-bede-3573498311f2"
+api_keys={
+  "na": "268306a5-a526-4535-800c-623be8313f74",
+  "euw":"71be2bcb-e5de-4784-bede-3573498311f2"
+}
 
 loglevel=99 # global var !
 
@@ -56,27 +59,40 @@ http_handler  = urllib.HTTPHandler(debuglevel=loglevel)
 def Linefeed():
   print "----------------------------------------------------------------"
 
+def get_api_key(region):
+  for key,value in api_keys.items():
+    if key==region:
+      if loglevel>50:
+        print "API key for region",region,"is ",value
+      return "api_key="+value
+  return "???"
+
 def getJSONResponse(context,url):
+  if region=="na":
+    url="https://na.api.pvp.net/"+url
+  elif region=="euw":
+    url="https://euw.api.pvp.net/"+url
+
   if loglevel>40:
-    print context+": URL is"+url
+    print context+": URL is "+url
   httpresponse=urllib.urlopen(url)
   jsonresponse=httpresponse.read()
   j1=json.loads(jsonresponse)
   if loglevel>80:
-    print context+": json resp is"+str(j1)
+    print context+": json resp is "+str(j1)
   return j1
 
 def get_champion_name(id,region):
-  url="https://global.api.pvp.net/api/lol/static-data/"+region+"/v1.2/champion/"
+  url="api/lol/static-data/"+region+"/v1.2/champion/"
   url=url+str(id)
-  url=url+"?api_key=71be2bcb-e5de-4784-bede-3573498311f2"
+  url=url+"?"+get_api_key(region)
   resp=getJSONResponse("get_champion_name`",url)
   return resp["name"]
 
 def getSummonerId(name,region):
-  url="https://euw.api.pvp.net/api/lol/"+region+\
+  url="api/lol/"+region+\
       "/v1.4/summoner/by-name/"+name+\
-      "?api_key=71be2bcb-e5de-4784-bede-3573498311f2"
+      "?"+get_api_key(region)
   resp=getJSONResponse("getSummonerId",url)
   j2=resp[name]
   id=j2["id"]
@@ -90,8 +106,8 @@ def safeGetStats(stats,value):
   return theResult
 
 def printSummonerGameList(id,region, do_csv):
-  url1="https://euw.api.pvp.net/api/lol/"+region+"/v1.3/game/by-summoner/"
-  url2="/recent?api_key=71be2bcb-e5de-4784-bede-3573498311f2"
+  url1="api/lol/"+region+"/v1.3/game/by-summoner/"
+  url2="/recent?"+get_api_key(region)
   url=url1+str(id)+url2
 
   resp=getJSONResponse("printSummonerGameList",url)
@@ -101,10 +117,10 @@ def printSummonerGameList(id,region, do_csv):
     print "+++ gamelist is: <" + str(gamelist)+">"
 
   if do_csv:
-    print "#\tWhen\tMi\tGameType\tSubType\tMode\tLvl"\
-      "Won?\tChampion\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst"
+    print "#\tWhen\tMins\tGameType\tSubType\tMode\tLvl"\
+      "\tWon?\tChampion\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst"
   else:
-    print " # When                     Mi GameType     "+\
+    print " # When                   Mins GameType     "+\
       "   SubType              Mode      Lvl" \
       " Won?   Champion        DamTC GEarn GSold KMni KTur Kill Deth Asst"
 
@@ -113,7 +129,7 @@ def printSummonerGameList(id,region, do_csv):
       "   -------------------- --------  ---" \
       " ---- ----------------  ----- ----- ----- ---- ---- ---- ---- ----"
 
-  gamenum=1
+  gamenum=10
 
   for game in gamelist:
     if loglevel>0:
@@ -166,7 +182,7 @@ def printSummonerGameList(id,region, do_csv):
       string.rjust(str(safeGetStats(stats,"assists")),4)
 
     # increase counter
-    gamenum=gamenum+1
+    gamenum=gamenum-1
 
 def usage():
   print "usage: " + sys.argv[0] + " <name of summoner> <region> <csv> <debug>"
