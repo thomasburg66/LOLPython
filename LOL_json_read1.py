@@ -1,5 +1,8 @@
 __author__ = 'Thomas'
 
+NAME="LOLPyth"
+VERSION="1.01"
+
 import urllib2 as urllib
 import json
 import time
@@ -222,6 +225,7 @@ if __name__ == '__main__':
 
   # headline
   if not do_csv:
+    print NAME, " version ", VERSION
     print "--- Statistics for "+region+" Summoner , "+summoner_name #+time.ctime(time.now())
 
   # get stats
