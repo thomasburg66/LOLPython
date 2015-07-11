@@ -1,7 +1,11 @@
 __author__ = 'Thomas'
 
+'''
+1.1x: pull misc game data by guessing game ids
+1.0x: get data for specific summoner
+'''
 NAME = "LOLPyth"
-VERSION = "1.01"
+VERSION = "1.10 - 11Jul2015"
 
 import urllib2 as urllib
 import json
@@ -53,12 +57,10 @@ api_keys = {
   "euw": "71be2bcb-e5de-4784-bede-3573498311f2"
 }
 
-loglevel = 99  # global var !
-
 http_method = "GET"
+http_handler = urllib.HTTPHandler()
 
-http_handler = urllib.HTTPHandler(debuglevel=loglevel)
-
+G_loglevel=0
 
 def Linefeed():
   print
@@ -68,14 +70,18 @@ def Linefeed():
 def get_api_key(region):
   for key, value in api_keys.items():
     if key == region:
-      if loglevel > 50:
+      if G_loglevel > 50:
         print
         "API key for region", region, "is ", value
       return "api_key=" + value
   return "???"
 
 
+
+
 def getJSONResponse(region,context, url_end):
+# return success, then return val or error string
+
   if region == "na":
     full_url = "https://na.api.pvp.net/" + url_end
   elif region == "euw":
@@ -86,34 +92,55 @@ def getJSONResponse(region,context, url_end):
     print"unknown region"
     sys.exit()
 
-  if loglevel > 40:
-    print context + ": URL is " + full_url
-  httpresponse = urllib.urlopen(full_url)
+  if G_loglevel > 40:
+    print "getJSONResponse1 url is " + full_url
+
+  try:
+    httpresponse = urllib.urlopen(full_url)
+  except Exception, e:
+    if G_loglevel>10:
+      print "http error ",e,"continuing..."
+    return False,"HTTP error"+str(e)
+
+  if G_loglevel > 80:
+    print "getJSONResponse2 context",context + ": httpresponse is " + httpresponse
+
   jsonresponse = httpresponse.read()
-  j1 = json.loads(jsonresponse)
-  if loglevel > 80:
-    print
-    context + ": json resp is " + str(j1)
-  return j1
+  if G_loglevel > 70:
+    print "getJSONResponse3 context",context + ": jsonresponse is " + jsonresponse
+
+  try:
+    j1 = json.loads(jsonresponse)
+  except Exception, e:
+    return False,"JSonError"+str(e)
+
+  if G_loglevel > 60:
+    print "getJSONResponse4 context",context + ": json resp is " + j1
+
+  return True,j1
 
 
 def get_champion_name(id, region):
   url_end = "/"+region + "/v1.2/champion/"
   url_end = url_end + str(id)
   url_end = url_end + "?" + get_api_key(region)
-  resp = getJSONResponse("global", "get_champion_name", url_end)
+  success,resp = getJSONResponse("global", "get_champion_name", url_end)
+  if not success:
+    print "oops - champion not found"
+    sys.exit()
   return resp["name"]
-
-
 def getSummonerId(name, region):
   url_end = "api/lol/" + region + \
         "/v1.4/summoner/by-name/" + name + \
         "?" + get_api_key(region)
-  resp = getJSONResponse(region, "getSummonerId", url_end)
+  success,resp = getJSONResponse(region, "getSummonerId", url_end)
+  if not success:
+    print "oops - summoner not found"
+    sys.exit()
+
   j2 = resp[name]
   id = j2["id"]
   return id
-
 
 def safeGetStats(stats, value):
   try:
@@ -128,30 +155,34 @@ def printSummonerGameList(id, region, do_csv):
   url2 = "/recent?" + get_api_key(region)
   url = url1 + str(id) + url2
 
-  resp = getJSONResponse(region,"printSummonerGameList", url)
+  success,resp = getJSONResponse(region,"printSummonerGameList", url)
+  if not success:
+    print "oops - gamelist not found"
+    sys.exit()
+
   gamelist = resp["games"]
-  if loglevel > 30:
+  if G_loglevel > 30:
     Linefeed()
     print "+++ gamelist is: <" + str(gamelist) + ">"
 
   if do_csv:
-    print "#\tWhen\tMins\tGameType\tSubType\tMode\tLvl" \
+    print "GameID\tWhen\tMins\tGameType\tSubType\tMode\tLvl" \
       "\tWon?\tChampion\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst"
   else:
-    print " # When                   Mins GameType     " + \
+    print "GameID     When                   Mins GameType     " + \
       "   SubType              Mode      Lvl" \
       " Won?   Champion        DamTC GEarn GSold KMni KTur Kill Deth Asst"
 
   if not do_csv:
     print \
-    " - ------------------------ -- --------     " + \
+    "---------- ------------------------ -- --------     " + \
     "   -------------------- --------  ---" \
     " ---- ----------------  ----- ----- ----- ---- ---- ---- ---- ----"
 
   gamenum = 10
 
   for game in gamelist:
-    if loglevel > 0:
+    if G_loglevel > 0:
       Linefeed()
       print "*** game is <" + str(game) + ">"
 
@@ -161,7 +192,7 @@ def printSummonerGameList(id, region, do_csv):
 
     # stats
     stats = game["stats"]
-    if loglevel == 88:
+    if G_loglevel == 88:
       print stats;
     minutes = int(stats["timePlayed"]) / 60
 
@@ -181,6 +212,9 @@ def printSummonerGameList(id, region, do_csv):
     else:
       TXT = ""
       SEP = " "
+
+    gamenum=game["gameId"]
+
     print \
         string.rjust(str(gamenum), 2) + SEP + \
         TXT + gametime + TXT + SEP + \
@@ -203,38 +237,109 @@ def printSummonerGameList(id, region, do_csv):
     # increase counter
     gamenum = gamenum - 1
 
+# /api/lol/{region}/v2.2/match/
+def process_match(match_id,region):
+  url_end = "api/lol/" + region + \
+        "/v2.2/match/" + str(match_id) + \
+        "?" + get_api_key(region)
 
-def usage():
-  print
-  "usage: " + sys.argv[0] + " <name of summoner> <region> <csv> <debug>"
-  print
-  "   <csv>   - Y or y for Excel readable format"
-  print
-  "           - any other value for human readable format"
-  print
-  "   <debug> - 0 for quiet mode"
-  print
-  "         - any other value for human readable format"
+  success,resp = getJSONResponse(region, "process_match", url_end)
+  if not success:
+    return success
 
+#  if G_loglevel>100:
+#    print resp
+
+  sep1=' '
+  txt1="\""
+
+  print match_id,\
+    "\""+str(time.ctime(resp["matchCreation"]/1000))+"\"",\
+    resp["matchCreation"],\
+    resp["matchDuration"],\
+    resp["mapId"],\
+    resp["matchVersion"],\
+    resp["queueType"],resp["matchMode"],resp["matchType"]
+
+  return True
+
+def pull_loop(starting_match_id, pull_interval_ms, region):
+  match_id=starting_match_id
+  is_done=False
+
+  while not is_done:
+    # get next match
+    success=process_match(match_id,region)
+
+    # wait a bit
+    time.sleep(pull_interval_ms / 1000)
+
+    # next match
+    match_id=match_id+1
+
+def collect_data():
+  global G_loglevel
+
+  try:
+    starting_match_id = int(sys.argv[1])
+    region = sys.argv[2]
+    pull_interval_ms = int(sys.argv[3])
+    G_loglevel = int(sys.argv[4])
+  except Exception, e:
+    usage(2)
+    sys.exit()
+
+  print "data collecting mode: starting match id ",starting_match_id,\
+        ", pull interval ",pull_interval_ms,"ms" \
+        ", region ",region,", loglevel ",G_loglevel
+
+  pull_loop(starting_match_id, pull_interval_ms, region)
+
+  sys.exit()
+
+def usage(mode):
+
+  if mode==0 or mode==1:
+    print "\n\n--- Mode1: get last 10 games for a summoner ---"
+    print   "usage: " + sys.argv[0] + " <name of summoner> <region> <csv> <loglevel>"
+    print  "   <csv>   - Y or y for Excel readable format"
+    print  "           - any other value for human readable format"
+
+  if mode==0 or mode==2:
+    print "\n\n--- Mode2: slowly gather game data ---"
+    print "usage: " + sys.argv[0] + " <starting game id> <region> <pull interval[ms]> <loglevel>"
+
+
+def hello():
+  print NAME, " version ", VERSION
 
 def dummy_main():
   return
 
-def hello(do_csv):
-  print NAME, " version ", VERSION
-
 if __name__ == '__main__':
-  # default summoner_name
-  summoner_name = "lgw2015"  # "sayna" mtyranus
+
+  hello()
+
+  try:
+    mode=int(sys.argv[1])
+    if mode>1000000000:
+      # data collecting mode
+      collect_data()
+  except Exception, e:
+    try:
+      strval=sys.argv[1]
+    except Exception, e:
+      usage(0)
+      sys.exit()
 
   # get runtime parameters
   try:
     summoner_name = sys.argv[1]
     region = sys.argv[2]
     do_csv = sys.argv[3]
-    loglevel = int(sys.argv[4])
+    G_loglevel = int(sys.argv[4])
   except Exception, e:
-    usage()
+    usage(1)
     sys.exit()
 
   if do_csv == "y" or do_csv == "Y":
@@ -242,12 +347,9 @@ if __name__ == '__main__':
   else:
     do_csv = False
 
-  # startup msg
-  hello(do_csv)
-
   if not do_csv:
     print "human readable output, region '" + region + "', summoner '" \
-      + summoner_name + "', debug " + str(loglevel)
+      + summoner_name + "', debug " + str(G_loglevel)
 
   # convert to id
   id = getSummonerId(summoner_name, region)
