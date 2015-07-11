@@ -47,34 +47,38 @@ u'stats':
 # LOL API credentials
 access_token_key = "71be2bcb-e5de-4784-bede-3573498311f2"
 
-_debug = 5
+loglevel=99 # global var !
 
 http_method = "GET"
 
-http_handler  = urllib.HTTPHandler(debuglevel=_debug)
+http_handler  = urllib.HTTPHandler(debuglevel=loglevel)
 
 def Linefeed():
   print "----------------------------------------------------------------"
 
-def getJSONResponse(url):
+def getJSONResponse(context,url):
+  if loglevel>40:
+    print context+": URL is"+url
   httpresponse=urllib.urlopen(url)
   jsonresponse=httpresponse.read()
   j1=json.loads(jsonresponse)
+  if loglevel>80:
+    print context+": json resp is"+str(j1)
   return j1
 
-def getChampionName(id):
-  url="https://global.api.pvp.net/api/lol/static-data/euw/v1.2/champion/"
+def get_champion_name(id,region):
+  url="https://global.api.pvp.net/api/lol/static-data/"+region+"/v1.2/champion/"
   url=url+str(id)
   url=url+"?api_key=71be2bcb-e5de-4784-bede-3573498311f2"
-  resp=getJSONResponse(url)
+  resp=getJSONResponse("get_champion_name`",url)
   return resp["name"]
 
-def getSummonerId(name):
-  url="https://euw.api.pvp.net/api/lol/euw/v1.4/summoner/by-name/"+name+"?api_key=71be2bcb-e5de-4784-bede-3573498311f2"
-  httpresponse=urllib.urlopen(url)
-  jsonresponse=httpresponse.read()
-  j1=json.loads(jsonresponse)
-  j2=j1[name]
+def getSummonerId(name,region):
+  url="https://euw.api.pvp.net/api/lol/"+region+\
+      "/v1.4/summoner/by-name/"+name+\
+      "?api_key=71be2bcb-e5de-4784-bede-3573498311f2"
+  resp=getJSONResponse("getSummonerId",url)
+  j2=resp[name]
   id=j2["id"]
   return id
 
@@ -89,17 +93,10 @@ def printSummonerGameList(id,region, do_csv):
   url1="https://euw.api.pvp.net/api/lol/"+region+"/v1.3/game/by-summoner/"
   url2="/recent?api_key=71be2bcb-e5de-4784-bede-3573498311f2"
   url=url1+str(id)+url2
-  if  _debug:
-    print "+++URL is: " + url
-  httpresponse=urllib.urlopen(url)
-  jsonresponse=httpresponse.read()
-  j1=json.loads(jsonresponse)
-  if _debug>1:
-    Linefeed()
-    print "+++ j1 is: <" + str(j1)+">"
 
-  gamelist=j1["games"]
-  if _debug>1:
+  resp=getJSONResponse("printSummonerGameList",url)
+  gamelist=resp["games"]
+  if loglevel>30:
     Linefeed()
     print "+++ gamelist is: <" + str(gamelist)+">"
 
@@ -119,17 +116,17 @@ def printSummonerGameList(id,region, do_csv):
   gamenum=1
 
   for game in gamelist:
-    if _debug>0:
+    if loglevel>0:
       Linefeed()
       print "*** game is <" + str(game)+">"
 
     # gather some data
     championId=game["championId"]
-    championName=getChampionName(championId)
+    championName=get_champion_name(championId,region)
 
     # stats
     stats=game["stats"]
-    if _debug==88:
+    if loglevel==88:
       print stats;
     minutes=int(stats["timePlayed"])/60
 
@@ -156,7 +153,7 @@ def printSummonerGameList(id,region, do_csv):
       string.ljust(str(game["gameType"]),15)+SEP+\
       string.ljust(str(game["subType"]),20)+SEP+\
       string.ljust(game["gameMode"],10)+SEP+\
-      str(game["level"])+SEP+\
+      string.rjust(str(game["level"]),2)+SEP+\
       string.ljust(str(stats["win"]),6)+SEP+\
       string.ljust(championName,15)+SEP+\
       string.rjust(str(pd),5)+SEP+\
@@ -171,29 +168,41 @@ def printSummonerGameList(id,region, do_csv):
     # increase counter
     gamenum=gamenum+1
 
+def usage():
+  print "usage: " + sys.argv[0] + " <name of summoner> <region> <csv> <debug>"
+  print "   <csv>   - Y or y for Excel readable format"
+  print "           - any other value for human readable format"
+  print "   <debug> - 0 for quiet mode"
+  print "         - any other value for human readable format"
+
+def dummy_main():
+  return
+
 if __name__ == '__main__':
   # default summoner_name
   summoner_name="lgw2015" # "sayna" mtyranus
 
-  # get summoner name from runtime parameter if present
+  # get runtime parameters
   try:
     summoner_name=sys.argv[1]
     region=sys.argv[2]
+    do_csv=sys.argv[3]
+    loglevel=int(sys.argv[4])
   except Exception,e:
-    print "usage: " + sys.argv[0] + " <name of summoner> <region> [CSV]"
-    print "   CSV: - (empty)     --> for human readable output"
-    print "        - (any value) --> CSV output format"
+    usage()
     sys.exit()
 
-  try:
-    dummy_result=sys.argv[3]
+  if do_csv=="y" or do_csv=="Y":
     do_csv=True
-  except Exception,e:
-    print "creating human readable output format"
+  else:
     do_csv=False
 
+  if not do_csv:
+    print "human readable output, region '"+region+"', summoner '"\
+      +summoner_name+"', debug "+str(loglevel)
+
   # convert to id
-  id=getSummonerId(summoner_name)
+  id=getSummonerId(summoner_name,region)
 
   # headline
   if not do_csv:
