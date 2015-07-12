@@ -1,13 +1,14 @@
 __author__ = 'Thomas'
 
 '''
+1.3x: read json output (mode 2) and write it in Excel format
 1.2x: create local copy of match data in json format
 1.1x: pull misc game data by guessing game ids
 1.0x: get data for specific summoner
 '''
 
 NAME = "LOLPyth"
-VERSION = "1.21 - 12Jul2015"
+VERSION = "1.31 - 12Jul2015"
 
 import urllib2 as urllib
 import json
@@ -52,6 +53,136 @@ u'stats':
 
 
 '''
+
+# champion ids
+champion_names={
+      "35": "Shaco",
+      "36": "DrMundo",
+      "33": "Rammus",
+      "34": "Anivia",
+      "39": "Irelia",
+      "157": "Yasuo",
+      "37": "Sona",
+      "38": "Kassadin",
+      "154": "Zac",
+      "150": "Gnar",
+      "43": "Karma",
+      "42": "Corki",
+      "41": "Gangplank",
+      "40": "Janna",
+      "201": "Braum",
+      "22": "Ashe",
+      "23": "Tryndamere",
+      "24": "Jax",
+      "25": "Morgana",
+      "26": "Zilean",
+      "27": "Singed",
+      "28": "Evelynn",
+      "29": "Twitch",
+      "3": "Galio",
+      "161": "Velkoz",
+      "2": "Olaf",
+      "1": "Annie",
+      "7": "Leblanc",
+      "30": "Karthus",
+      "6": "Urgot",
+      "32": "Amumu",
+      "5": "XinZhao",
+      "31": "Chogath",
+      "4": "TwistedFate",
+      "9": "FiddleSticks",
+      "8": "Vladimir",
+      "19": "Warwick",
+      "17": "Teemo",
+      "18": "Tristana",
+      "15": "Sivir",
+      "16": "Soraka",
+      "13": "Ryze",
+      "14": "Sion",
+      "11": "MasterYi",
+      "12": "Alistar",
+      "21": "MissFortune",
+      "20": "Nunu",
+      "107": "Rengar",
+      "106": "Volibear",
+      "105": "Fizz",
+      "104": "Graves",
+      "103": "Ahri",
+      "99": "Lux",
+      "102": "Shyvana",
+      "101": "Xerath",
+      "412": "Thresh",
+      "98": "Shen",
+      "222": "Jinx",
+      "96": "KogMaw",
+      "223": "TahmKench",
+      "92": "Riven",
+      "91": "Talon",
+      "90": "Malzahar",
+      "429": "Kalista",
+      "10": "Kayle",
+      "421": "RekSai",
+      "89": "Leona",
+      "79": "Gragas",
+      "117": "Lulu",
+      "114": "Fiora",
+      "78": "Poppy",
+      "115": "Ziggs",
+      "77": "Udyr",
+      "112": "Viktor",
+      "113": "Sejuani",
+      "110": "Varus",
+      "111": "Nautilus",
+      "119": "Draven",
+      "432": "Bard",
+      "245": "Ekko",
+      "82": "Mordekaiser",
+      "83": "Yorick",
+      "80": "Pantheon",
+      "81": "Ezreal",
+      "86": "Garen",
+      "84": "Akali",
+      "85": "Kennen",
+      "67": "Vayne",
+      "126": "Jayce",
+      "69": "Cassiopeia",
+      "127": "Lissandra",
+      "68": "Rumble",
+      "121": "Khazix",
+      "122": "Darius",
+      "120": "Hecarim",
+      "72": "Skarner",
+      "236": "Lucian",
+      "74": "Heimerdinger",
+      "75": "Nasus",
+      "238": "Zed",
+      "76": "Nidalee",
+      "134": "Syndra",
+      "133": "Quinn",
+      "59": "JarvanIV",
+      "58": "Renekton",
+      "57": "Maokai",
+      "56": "Nocturne",
+      "55": "Katarina",
+      "64": "LeeSin",
+      "62": "MonkeyKing",
+      "63": "Brand",
+      "268": "Azir",
+      "267": "Nami",
+      "60": "Elise",
+      "131": "Diana",
+      "61": "Orianna",
+      "266": "Aatrox",
+      "143": "Zyra",
+      "48": "Trundle",
+      "45": "Veigar",
+      "44": "Taric",
+      "51": "Caitlyn",
+      "53": "Blitzcrank",
+      "54": "Malphite",
+      "254": "Vi",
+      "50": "Swain"
+   }
 
 # LOL API credentials
 api_keys = {
@@ -105,11 +236,11 @@ def getJSONResponse(region,context, url_end):
     return False,"HTTP error"+str(e)
 
   if G_loglevel > 80:
-    print "getJSONResponse2 context",context + ": httpresponse is " + httpresponse
+    print "getJSONResponse2 context",context + ": httpresponse is " + str(httpresponse)
 
   jsonresponse = httpresponse.read()
   if G_loglevel > 70:
-    print "getJSONResponse3 context",context + ": jsonresponse is " + jsonresponse
+    print "getJSONResponse3 context",context + ": json raw response is " + str(jsonresponse)
 
   try:
     j1 = json.loads(jsonresponse)
@@ -117,12 +248,17 @@ def getJSONResponse(region,context, url_end):
     return False,"JSonError"+str(e)
 
   if G_loglevel > 60:
-    print "getJSONResponse4 context",context + ": json resp is " + j1
+    print "getJSONResponse4 context",context + ": json pythonized resp is " + str(j1)
 
   return True,j1
 
+def get_champion_name_static(id):
+  for key,value in champion_names.items():
+    if key==id:
+      return value
+  return "???"
 
-def get_champion_name(id, region):
+def get_champion_name_dynamic(id, region):
   url_end = "/"+region + "/v1.2/champion/"
   url_end = url_end + str(id)
   url_end = url_end + "?" + get_api_key(region)
@@ -131,6 +267,7 @@ def get_champion_name(id, region):
     print "oops - champion not found"
     sys.exit()
   return resp["name"]
+
 def getSummonerId(name, region):
   url_end = "api/lol/" + region + \
         "/v1.4/summoner/by-name/" + name + \
@@ -190,7 +327,7 @@ def printSummonerGameList(id, region, do_csv):
 
     # gather some data
     championId = game["championId"]
-    championName = get_champion_name(championId, region)
+    championName = get_champion_name_static(str(championId))
 
     # stats
     stats = game["stats"]
@@ -283,27 +420,28 @@ def pull_loop(starting_match_id, pull_interval_ms, region, output_format):
     match_id=match_id+1
 
 def get_output_format(input):
-  input.upper();
-  if input=="JSON" or input=="TXT":
+  input=input.upper();
+  if input=="JSON" or input=="TXT" or input=="HUMAN":
     return input
   else:
     print "illegal value '"+input+"' for <output format>"
     sys.exit()
 
-def collect_data():
+def collect_data_mode_2():
+  # mode 2
   global G_loglevel
 
   try:
-    starting_match_id = int(sys.argv[1])
-    region = sys.argv[2]
-    pull_interval_ms = int(sys.argv[3])
-    output_format=get_output_format(sys.argv[4])
-    G_loglevel = int(sys.argv[5])
+    starting_match_id = int(sys.argv[2])
+    region = sys.argv[3]
+    pull_interval_ms = int(sys.argv[4])
+    output_format=get_output_format(sys.argv[5])
+    G_loglevel = int(sys.argv[6])
   except Exception, e:
     usage(2)
     sys.exit()
 
-  print "data collecting mode: starting match id ",starting_match_id,\
+  print "mode 2 - data collecting mode: starting match id ",starting_match_id,\
         ", pull interval ",pull_interval_ms,"ms" \
         ", region ",region,", loglevel ",G_loglevel
 
@@ -311,19 +449,59 @@ def collect_data():
 
   sys.exit()
 
+def read_json_data_mode_3():
+  # mode 3
+  global G_loglevel
+
+  try:
+    output_format=get_output_format(sys.argv[2])
+    G_loglevel = int(sys.argv[3])
+  except Exception, e:
+    usage(3)
+    sys.exit()
+
+  print "mode 3 - read json data from file ",\
+        ", output format ",output_format,", loglevel ",G_loglevel
+
+  print "matchId matchCreationNum matchCreationDate Champion"
+  # read through stdin
+  for line in sys.stdin:
+    # raw python json format now in line
+    if G_loglevel>80:
+      print "read_json_data_mode_3 - 1: Raw  line: <"+line+">"
+
+    # convert back to dict
+    mydict=eval(line)
+
+    # time of game
+    numtime = mydict["matchCreation"]
+    gametime = "\""+time.ctime(numtime/1000)+"\""
+
+    # disect participants
+    participants=mydict["participants"]
+    for p in participants:
+      print mydict["matchId"],numtime,gametime,get_champion_name_static(str(p["championId"]))
+
 def usage(mode):
 
   if mode==0 or mode==1:
-    print "\n\n--- Mode1: get last 10 games for a summoner ---"
-    print   "usage: " + sys.argv[0] + " <name of summoner> <region> <csv> <loglevel>"
+
+    print "\n\n--- Mode 1: get last 10 games for a summoner ---"
+    print   "usage: " + sys.argv[0] + " 1 <name of summoner> <region> <csv> <loglevel>"
     print  "   <csv>   - Y or y for Excel readable format"
     print  "           - any other value for human readable format"
 
   if mode==0 or mode==2:
-    print "\n\n--- Mode2: slowly gather game data ---"
+    print "\n\n--- Mode 2: slowly gather game data ---"
     print "usage: " + sys.argv[0] + \
-          " <starting game id> <region> <pull interval[ms]> <output format> <loglevel>"
+          " 2 <starting game id> <region> <pull interval[ms]> <output format> <loglevel>"
     print "    <output format> can be JSON or CSV"
+
+  if mode==0 or mode==3:
+    print "\n\n--- Mode 3: read json data and write csv ---"
+    print "usage: " + sys.argv[0] + \
+          " 3 <output format> <loglevel>"
+    print "    <output format> can be CSV or HUMAN"
 
 
 def hello():
@@ -338,22 +516,26 @@ if __name__ == '__main__':
 
   try:
     mode=int(sys.argv[1])
-    if mode>1000000000:
-      # data collecting mode
-      collect_data()
   except Exception, e:
-    try:
-      strval=sys.argv[1]
-    except Exception, e:
-      usage(0)
-      sys.exit()
+    usage(0)
+    sys.exit()
 
+  if mode==2:
+    # data collecting mode
+    collect_data_mode_2()
+    sys.exit()
+  elif mode==3:
+    # read json data
+    read_json_data_mode_3()
+    sys.exit()
+
+  # mode 1
   # get runtime parameters
   try:
-    summoner_name = sys.argv[1]
-    region = sys.argv[2]
-    do_csv = sys.argv[3]
-    G_loglevel = int(sys.argv[4])
+    summoner_name = sys.argv[2]
+    region = sys.argv[3]
+    do_csv = sys.argv[4]
+    G_loglevel = int(sys.argv[5])
   except Exception, e:
     usage(1)
     sys.exit()
