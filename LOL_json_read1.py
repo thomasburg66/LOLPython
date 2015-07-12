@@ -365,9 +365,9 @@ def printSummonerGameList(id, region, do_csv):
         string.ljust(str(stats["win"]), 6) + SEP + \
         string.ljust(championName, 15) + SEP + \
         string.rjust(str(pd), 5) + SEP + \
-        string.rjust(str(stats["goldEarned"]), 5) + SEP + \
-        string.rjust(str(stats["goldSpent"]), 5) + SEP + \
-        string.rjust(str(stats["minionsKilled"]), 4) + SEP + \
+        string.rjust(str(safeGetStats(stats,"goldEarned")), 5) + SEP + \
+        string.rjust(str(safeGetStats(stats,"goldSpent")), 5) + SEP + \
+        string.rjust(str(safeGetStats(stats,"minionsKilled")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "turretsKilled")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "championsKilled")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "numDeaths")), 4) + SEP + \
