@@ -5,6 +5,7 @@ __author__ = 'Thomas'
 1.1x: pull misc game data by guessing game ids
 1.0x: get data for specific summoner
 '''
+
 NAME = "LOLPyth"
 VERSION = "1.21 - 12Jul2015"
 
