@@ -1,11 +1,12 @@
 __author__ = 'Thomas'
 
 '''
+1.2x: create local copy of match data in json format
 1.1x: pull misc game data by guessing game ids
 1.0x: get data for specific summoner
 '''
 NAME = "LOLPyth"
-VERSION = "1.10 - 11Jul2015"
+VERSION = "1.21 - 12Jul2015"
 
 import urllib2 as urllib
 import json
@@ -238,7 +239,7 @@ def printSummonerGameList(id, region, do_csv):
     gamenum = gamenum - 1
 
 # /api/lol/{region}/v2.2/match/
-def process_match(match_id,region):
+def process_match(match_id,region,output_format):
   url_end = "api/lol/" + region + \
         "/v2.2/match/" + str(match_id) + \
         "?" + get_api_key(region)
@@ -253,29 +254,40 @@ def process_match(match_id,region):
   sep1=' '
   txt1="\""
 
-  print match_id,\
-    "\""+str(time.ctime(resp["matchCreation"]/1000))+"\"",\
-    resp["matchCreation"],\
-    resp["matchDuration"],\
-    resp["mapId"],\
-    resp["matchVersion"],\
-    resp["queueType"],resp["matchMode"],resp["matchType"]
+  if output_format=="JSON":
+    print resp
+  else:
+    print match_id,\
+      "\""+str(time.ctime(resp["matchCreation"]/1000))+"\"",\
+      resp["matchCreation"],\
+      resp["matchDuration"],\
+      resp["mapId"],\
+      resp["matchVersion"],\
+      resp["queueType"],resp["matchMode"],resp["matchType"]
 
   return True
 
-def pull_loop(starting_match_id, pull_interval_ms, region):
+def pull_loop(starting_match_id, pull_interval_ms, region, output_format):
   match_id=starting_match_id
   is_done=False
 
   while not is_done:
     # get next match
-    success=process_match(match_id,region)
+    success=process_match(match_id,region,output_format)
 
     # wait a bit
     time.sleep(pull_interval_ms / 1000)
 
     # next match
     match_id=match_id+1
+
+def get_output_format(input):
+  input.upper();
+  if input=="JSON" or input=="TXT":
+    return input
+  else:
+    print "illegal value '"+input+"' for <output format>"
+    sys.exit()
 
 def collect_data():
   global G_loglevel
@@ -284,7 +296,8 @@ def collect_data():
     starting_match_id = int(sys.argv[1])
     region = sys.argv[2]
     pull_interval_ms = int(sys.argv[3])
-    G_loglevel = int(sys.argv[4])
+    output_format=get_output_format(sys.argv[4])
+    G_loglevel = int(sys.argv[5])
   except Exception, e:
     usage(2)
     sys.exit()
@@ -293,7 +306,7 @@ def collect_data():
         ", pull interval ",pull_interval_ms,"ms" \
         ", region ",region,", loglevel ",G_loglevel
 
-  pull_loop(starting_match_id, pull_interval_ms, region)
+  pull_loop(starting_match_id, pull_interval_ms, region, output_format)
 
   sys.exit()
 
@@ -307,7 +320,9 @@ def usage(mode):
 
   if mode==0 or mode==2:
     print "\n\n--- Mode2: slowly gather game data ---"
-    print "usage: " + sys.argv[0] + " <starting game id> <region> <pull interval[ms]> <loglevel>"
+    print "usage: " + sys.argv[0] + \
+          " <starting game id> <region> <pull interval[ms]> <output format> <loglevel>"
+    print "    <output format> can be JSON or CSV"
 
 
 def hello():
