@@ -1,6 +1,7 @@
 __author__ = 'Thomas'
 
 '''
+1.4x: added color coding
 1.3x: read json output (mode 2) and write it in Excel format
 1.2x: create local copy of match data in json format
 1.1x: pull misc game data by guessing game ids
@@ -8,7 +9,7 @@ __author__ = 'Thomas'
 '''
 
 NAME = "LOLPyth"
-VERSION = "1.31 - 12Jul2015"
+VERSION = "1.41 - 16Jul2015"
 
 import urllib2 as urllib
 import json
@@ -326,15 +327,15 @@ def printSummonerGameList(id, region, do_csv):
     print "Won?\tGameID\tWhen\tMins\tGameType\tSubType\tMode\tLvl" \
       "\tChampion\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst"
   else:
-    print "Won?   GameID     When                   Mins GameType     " + \
+    print "Won?  GameID     When                   Mins GameType     " + \
       "   SubType              Mode      Lvl" \
       " Champion        DamTC GEarn GSold KMni KTur Kill Deth Asst"
 
   if not do_csv:
     print \
-    "---------- ------------------------ -- --------     " + \
+    "----- ---------- ------------------------ -- --------     " + \
     "   -------------------- --------  ---" \
-    " ---- ----------------  ----- ----- ----- ---- ---- ---- ---- ----"
+    "----------------  ----- ----- ----- ---- ---- ---- ---- ----"
 
   gamenum = 10
 
@@ -376,10 +377,10 @@ def printSummonerGameList(id, region, do_csv):
     winloss=string.ljust(str(stats["win"]), 6);
     if winloss=="True  ":
       # green
-      sys.stdout.write('%s%-6s%s' % (Back.GREEN,winloss, Back.RESET))
+      sys.stdout.write('%s%-6s' % (Back.GREEN,winloss))
     else:
       # red
-      sys.stdout.write('%s%-6s%s' % (Back.RED,winloss,Back.RESET))
+      sys.stdout.write('%s%-6s' % (Back.RED,winloss))
 
     print \
         string.rjust(str(gamenum), 2) + SEP + \
@@ -398,6 +399,8 @@ def printSummonerGameList(id, region, do_csv):
         string.rjust(str(safeGetStats(stats, "championsKilled")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "numDeaths")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "assists")), 4)
+
+    sys.stdout.write('%s' % (Back.RESET))
 
     # increase counter
     gamenum = gamenum - 1
@@ -574,6 +577,7 @@ if __name__ == '__main__':
   if not do_csv:
     print "human readable output, region '" + region + "', summoner '" \
       + summoner_name + "', debug " + str(G_loglevel)
+    print " "
 
   # convert to id
   id = getSummonerId(summoner_name, region)
