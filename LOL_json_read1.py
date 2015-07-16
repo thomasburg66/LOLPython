@@ -1,7 +1,7 @@
 __author__ = 'Thomas'
 
 '''
-1.4x: added color coding
+1.4x: added color coding, added IP earned
 1.3x: read json output (mode 2) and write it in Excel format
 1.2x: create local copy of match data in json format
 1.1x: pull misc game data by guessing game ids
@@ -9,7 +9,7 @@ __author__ = 'Thomas'
 '''
 
 NAME = "LOLPyth"
-VERSION = "1.41 - 16Jul2015"
+VERSION = "1.42 - 16Jul2015"
 
 import urllib2 as urllib
 import json
@@ -324,18 +324,21 @@ def printSummonerGameList(id, region, do_csv):
     print "+++ gamelist is: <" + str(gamelist) + ">"
 
   if do_csv:
-    print "Won?\tGameID\tWhen\tMins\tGameType\tSubType\tMode\tLvl" \
-      "\tChampion\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst"
+    print "Won?\tGameID\tWhen\tMins\tGameType\tSubType\tMode\tLvlL" \
+      "\tChampion\tLvlC\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst\tIP"
   else:
-    print "Won?  GameID     When                   Mins GameType     " + \
-      "   SubType              Mode      Lvl" \
-      " Champion        DamTC GEarn GSold KMni KTur Kill Deth Asst"
+    sys.stdout.write('%s' % (Back.BLUE))
+    print \
+      "W GameID     When                   Mins GameType        " + \
+      "SubType              Mode     LvlL " \
+      "Champion    LvlC DamTC GEarn GSold KMni KTur Kill Deth Asst   IP"
 
   if not do_csv:
     print \
-    "----- ---------- ------------------------ -- --------     " + \
-    "   -------------------- --------  ---" \
-    "----------------  ----- ----- ----- ---- ---- ---- ---- ----"
+      "- ---------- ------------------------ -- ----------------" + \
+      "-------------------- -------- ---- " \
+      "---------   ---- ----- ----- ----- ---- ---- ---- ---- ---- ----"
+    sys.stdout.write('%s' % (Back.RESET))
 
   gamenum = 10
 
@@ -357,12 +360,6 @@ def printSummonerGameList(id, region, do_csv):
     numtime = game["createDate"] / 1000
     gametime = time.ctime(numtime)
 
-    # physical damage if present
-    try:
-      pd = stats["physicalDamageDealtToChampions"]
-    except Exception, e:
-      pd = "???"
-
     # and print it
     if do_csv:
       TXT = "\""
@@ -371,39 +368,46 @@ def printSummonerGameList(id, region, do_csv):
       TXT = ""
       SEP = " "
 
-    gamenum=game["gameId"]
-
     # win/loss in color
     winloss=string.ljust(str(stats["win"]), 6);
     if winloss=="True  ":
       # green
-      sys.stdout.write('%s%-6s' % (Back.GREEN,winloss))
+      sys.stdout.write('%s' % (Back.GREEN))
+      winloss="Y"
     else:
       # red
-      sys.stdout.write('%s%-6s' % (Back.RED,winloss))
+      sys.stdout.write('%s' % (Back.RED))
+      winloss="N"
 
     print \
-        string.rjust(str(gamenum), 2) + SEP + \
+        winloss + SEP + \
+        string.rjust(str(game["gameId"]), 2) + SEP + \
         TXT + gametime + TXT + SEP + \
         str(minutes) + SEP + \
         string.ljust(str(game["gameType"]), 15) + SEP + \
         string.ljust(str(game["subType"]), 20) + SEP + \
         string.ljust(game["gameMode"], 10) + SEP + \
         string.rjust(str(game["level"]), 2) + SEP + \
-        string.ljust(championName, 15) + SEP + \
-        string.rjust(str(pd), 5) + SEP + \
+        string.ljust(championName, 10) + SEP + \
+        string.rjust(str(safeGetStats(stats,"level")), 5) + SEP + \
+        string.rjust(str(safeGetStats(stats,"physicalDamageDealtToChampions")), 5) + SEP + \
         string.rjust(str(safeGetStats(stats,"goldEarned")), 5) + SEP + \
         string.rjust(str(safeGetStats(stats,"goldSpent")), 5) + SEP + \
         string.rjust(str(safeGetStats(stats,"minionsKilled")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "turretsKilled")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "championsKilled")), 4) + SEP + \
         string.rjust(str(safeGetStats(stats, "numDeaths")), 4) + SEP + \
-        string.rjust(str(safeGetStats(stats, "assists")), 4)
+        string.rjust(str(safeGetStats(stats, "assists")), 4)+ SEP + \
+        string.rjust(str(game["ipEarned"]), 4)
 
     sys.stdout.write('%s' % (Back.RESET))
 
     # increase counter
     gamenum = gamenum - 1
+
+    # be a good LOL API citizen
+    time.sleep(1/8)
+
 
 # /api/lol/{region}/v2.2/match/
 def process_match(match_id,region,output_format):
