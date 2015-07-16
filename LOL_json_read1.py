@@ -16,6 +16,8 @@ import time
 import string
 import sys
 
+from colorama import init, Fore, Back, Style
+
 '''
 
 https://developer.riotgames.com/api/methods
@@ -195,6 +197,22 @@ http_handler = urllib.HTTPHandler()
 
 G_loglevel=0
 
+
+# Fore, Back and Style are convenience classes for the constant ANSI strings that set
+#     the foreground, background and style. The don't have any magic of their own.
+FORES = [ Fore.BLACK, Fore.RED, Fore.GREEN, Fore.YELLOW, Fore.BLUE, Fore.MAGENTA, Fore.CYAN, Fore.WHITE ]
+BACKS = [ Back.BLACK, Back.RED, Back.GREEN, Back.YELLOW, Back.BLUE, Back.MAGENTA, Back.CYAN, Back.WHITE ]
+STYLES = [ Style.DIM, Style.NORMAL, Style.BRIGHT ]
+
+NAMES = {
+    Fore.BLACK: 'black', Fore.RED: 'red', Fore.GREEN: 'green', Fore.YELLOW: 'yellow', Fore.BLUE: 'blue', Fore.MAGENTA: 'magenta', Fore.CYAN: 'cyan', Fore.WHITE: 'white'
+    , Fore.RESET: 'reset',
+    Back.BLACK: 'black', Back.RED: 'red', Back.GREEN: 'green', Back.YELLOW: 'yellow', Back.BLUE: 'blue', Back.MAGENTA: 'magenta', Back.CYAN: 'cyan', Back.WHITE: 'white',
+    Back.RESET: 'reset'
+}
+
+init()
+
 def Linefeed():
   print
   "----------------------------------------------------------------"
@@ -305,12 +323,12 @@ def printSummonerGameList(id, region, do_csv):
     print "+++ gamelist is: <" + str(gamelist) + ">"
 
   if do_csv:
-    print "GameID\tWhen\tMins\tGameType\tSubType\tMode\tLvl" \
-      "\tWon?\tChampion\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst"
+    print "Won?\tGameID\tWhen\tMins\tGameType\tSubType\tMode\tLvl" \
+      "\tChampion\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst"
   else:
-    print "GameID     When                   Mins GameType     " + \
+    print "Won?   GameID     When                   Mins GameType     " + \
       "   SubType              Mode      Lvl" \
-      " Won?   Champion        DamTC GEarn GSold KMni KTur Kill Deth Asst"
+      " Champion        DamTC GEarn GSold KMni KTur Kill Deth Asst"
 
   if not do_csv:
     print \
@@ -354,6 +372,15 @@ def printSummonerGameList(id, region, do_csv):
 
     gamenum=game["gameId"]
 
+    # win/loss in color
+    winloss=string.ljust(str(stats["win"]), 6);
+    if winloss=="True  ":
+      # green
+      sys.stdout.write('%s%-6s%s' % (Back.GREEN,winloss, Back.RESET))
+    else:
+      # red
+      sys.stdout.write('%s%-6s%s' % (Back.RED,winloss,Back.RESET))
+
     print \
         string.rjust(str(gamenum), 2) + SEP + \
         TXT + gametime + TXT + SEP + \
@@ -362,7 +389,6 @@ def printSummonerGameList(id, region, do_csv):
         string.ljust(str(game["subType"]), 20) + SEP + \
         string.ljust(game["gameMode"], 10) + SEP + \
         string.rjust(str(game["level"]), 2) + SEP + \
-        string.ljust(str(stats["win"]), 6) + SEP + \
         string.ljust(championName, 15) + SEP + \
         string.rjust(str(pd), 5) + SEP + \
         string.rjust(str(safeGetStats(stats,"goldEarned")), 5) + SEP + \
