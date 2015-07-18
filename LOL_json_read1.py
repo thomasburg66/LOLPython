@@ -1,6 +1,7 @@
 __author__ = 'Thomas'
 
 '''
+1.5x: optionally list co-players in mode 1
 1.4x: added color coding, added IP earned
 1.3x: read json output (mode 2) and write it in Excel format
 1.2x: create local copy of match data in json format
@@ -9,7 +10,7 @@ __author__ = 'Thomas'
 '''
 
 NAME = "LOLPyth"
-VERSION = "1.42 - 16Jul2015"
+VERSION = "1.51 - 18Jul2015"
 
 import urllib2 as urllib
 import json
@@ -18,6 +19,46 @@ import string
 import sys
 
 from colorama import init, Fore, Back, Style
+
+
+dummy_game_list_tb_NA="1"
+'''
+W GameID     When                   Mins GameType        SubType              Mode     LvlL Champion    LvlC DamTC GEarn GSold KMni KTur Kill Deth Asst   IP
+- ---------- ------------------------ -- ------------------------------------ -------- ---- ---------   ---- ----- ----- ----- ---- ---- ---- ---- ---- ----
+N 1889648116 Sat Jul 18 00:02:03 2015 20 MATCHED_GAME    NORMAL               CLASSIC     5 Ziggs          8   214  3653  3840   33    0    0    2    0   63
+    levels:    5,3,7,9,5,4,7,7,?69111817?,
+    summoners: 68953593,69331960,66061889,56822520,59821370,69321812,69180533,68820435,69111817,
+'''
+
+dummy_game_list_tb_EUW="1"
+'''
+
+TB EUW games
+
+W GameID     When                   Mins GameType        SubType              Mode     LvlL Champion    LvlC DamTC GEarn GSold KMni KTur Kill Deth Asst   IP
+- ---------- ------------------------ -- ------------------------------------ -------- ---- ---------   ---- ----- ----- ----- ---- ---- ---- ---- ---- ----
+N 2204924082 Fri Jul 17 11:32:29 2015 52 CUSTOM_GAME     NONE                 CLASSIC    14 Ziggs         17  5065 11791 17250  125    0    5   13    1    0
+Y 2205198825 Fri Jul 17 03:37:38 2015 58 MATCHED_GAME    NORMAL               CLASSIC    14 Ziggs         18  3446 13994 17050   93    0    4   16   13  295
+Y 2205190699 Fri Jul 17 02:30:40 2015 35 MATCHED_GAME    NORMAL               CLASSIC    13 Ziggs         14   385  8642  7075   75    1    1    4    3   99
+N 2205143769 Fri Jul 17 01:39:52 2015 43 MATCHED_GAME    NORMAL               CLASSIC    13 Ziggs         17  3830 12834 11075  125    0    6    7   12   77
+N 2205083368 Fri Jul 17 00:33:09 2015 43 MATCHED_GAME    NORMAL               CLASSIC    13 Ziggs         16  1981 11200 13475  120    0    2   10    8   77
+N 2205015157 Thu Jul 16 23:36:48 2015 31 MATCHED_GAME    NORMAL               CLASSIC    13 Ziggs         13  1299  6926  7625   80    0    1    7    3   60
+N 2204940713 Thu Jul 16 22:23:09 2015 18 MATCHED_GAME    ODIN_UNRANKED        ODIN       13 Ziggs         15  2259 10579 10900   20    0    6    7    1   45
+N 2204883052 Thu Jul 16 21:58:32 2015 13 MATCHED_GAME    ODIN_UNRANKED        ODIN       13 Gnar          12  4498  7129  7825    3    0    4    8    2   34
+Y 2204325865 Thu Jul 16 18:17:12 2015  8 MATCHED_GAME    ODIN_UNRANKED        ODIN       13 Ziggs         10  1141  5070  3300   10    0    6    0    4   39
+N 2203867696 Thu Jul 16 06:28:44 2015 16 MATCHED_GAME    ODIN_UNRANKED        ODIN       13 Ziggs         15  2256  8827  8600   12    0    4    5   11   41
+
+
+W GameID     When                   Mins GameType        SubType              Mode     LvlL Champion    LvlC DamTC GEarn GSold KMni KTur Kill Deth Asst   IP
+- ---------- ------------------------ -- ------------------------------------ -------- ---- ---------   ---- ----- ----- ----- ---- ---- ---- ---- ---- ----
+Y 2206349197 Fri Jul 17 22:35:10 2015 10 MATCHED_GAME    ODIN_UNRANKED        ODIN       14 Ziggs         11   784  5607  3500   10    0    3    1    0   44
+    levels:    18,21,21,20,18,21,18,21,?75667631?,
+    summoners: 75967202,75440808,75432691,75857718,76017591,75302890,75512727,75987243,75667631,
+
+'''
+
+
+dummy_match_json_data="1"
 
 '''
 
@@ -28,11 +69,21 @@ u'createDate': 1393263989033L, u'gameMode': u'ARAM', u'mapId': 12,
 u'gameType': u'MATCHED_GAME', u'subType': u'ARAM_UNRANKED_5x5',
 u'teamId': 200, u'invalid': False, u'ipEarned': 220,
 
-u'fellowPlayers': [{u'team
-Id': 200, u'championId': 143, u'summonerId': 22791283}, {u'teamId': 100, u'championId': 24, u'summonerId': 20130360}, {u'teamId': 100, u'cha
-mpionId': 40, u'summonerId': 44188584}, {u'teamId': 200, u'championId': 92, u'summonerId': 31652931}, {u'teamId': 200, u'championId': 101, u
-'summonerId': 21043585}, {u'teamId': 100, u'championId': 60, u'summonerId': 19635022}, {u'teamId': 200, u'championId': 114, u'summonerId': 2
-0812831}, {u'teamId': 100, u'championId': 98, u'summonerId': 27704461}, {u'teamId': 100, u'championId': 18, u'summonerId': 20906123}]
+u'fellowPlayers':
+
+[
+
+  {u'teamId': 200, u'championId': 143, u'summonerId': 22791283},
+  {u'teamId': 100, u'championId': 24, u'summonerId': 20130360},
+  {u'teamId': 100, u'championId': 40, u'summonerId': 44188584},
+  {u'teamId': 200, u'championId': 92, u'summonerId': 31652931},
+  {u'teamId': 200, u'championId': 101, u'summonerId': 21043585},
+  {u'teamId': 100, u'championId': 60, u'summonerId': 19635022},
+  {u'teamId': 200, u'championId': 114, u'summonerId': 20812831},
+  {u'teamId': 100, u'championId': 98, u'summonerId': 27704461},
+  {u'teamId': 100, u'championId': 18, u'summonerId': 20906123}
+
+]
 
 , u'spell1': 21, u'spell2': 4,
 
@@ -277,8 +328,26 @@ def get_champion_name_static(id):
       return value
   return "???"
 
+'''
+{"68953593": {
+   "id": 68953593,
+   "name": "akoceeryan",
+   "profileIconId": 28,
+   "revisionDate": 1437170523000,
+   "summonerLevel": 5
+}}'''
+def get_summoner_info_dynamic(id, region):
+  url_end = "api/lol/"+region + "/v1.4/summoner/"
+  url_end = url_end + str(id)
+  url_end = url_end + "?" + get_api_key(region)
+  success,resp = getJSONResponse(region, "get_summoner_name", url_end)
+  if not success:
+    return "?","?"
+  sumdata=resp[str(id)]
+  return sumdata["summonerLevel"],sumdata["name"]
+
 def get_champion_name_dynamic(id, region):
-  url_end = "/"+region + "/v1.2/champion/"
+  url_end = "api/lol/"+region + "/v1.2/champion/"
   url_end = url_end + str(id)
   url_end = url_end + "?" + get_api_key(region)
   success,resp = getJSONResponse("global", "get_champion_name", url_end)
@@ -308,7 +377,7 @@ def safeGetStats(stats, value):
   return theResult
 
 
-def printSummonerGameList(id, region, do_csv):
+def printSummonerGameList(id, region, do_csv, do_show_summoner_data):
   url1 = "api/lol/" + region + "/v1.3/game/by-summoner/"
   url2 = "/recent?" + get_api_key(region)
   url = url1 + str(id) + url2
@@ -355,7 +424,7 @@ def printSummonerGameList(id, region, do_csv):
     stats = game["stats"]
     if G_loglevel == 88:
       print stats;
-    minutes = int(stats["timePlayed"]) / 60
+    minutes = string.rjust(str(int(stats["timePlayed"]) / 60),2)
 
     numtime = game["createDate"] / 1000
     gametime = time.ctime(numtime)
@@ -400,7 +469,27 @@ def printSummonerGameList(id, region, do_csv):
         string.rjust(str(safeGetStats(stats, "assists")), 4)+ SEP + \
         string.rjust(str(game["ipEarned"]), 4)
 
-    sys.stdout.write('%s' % (Back.RESET))
+    if do_show_summoner_data:
+      # optionally: print list of summoners: id/name/level
+      try:
+        player_list=game["fellowPlayers"]
+        sumidlist=  "    sum ids:   "
+        sumnamelist="    sum names: "
+        levlist=    "    levels:    "
+        for p in player_list:
+          thisid=p["summonerId"]
+          sumidlist=sumidlist+str(thisid)+","
+          level,name=get_summoner_info_dynamic(thisid,region)
+          levlist=levlist+str(level)+","
+          sumnamelist=sumnamelist+name+","
+
+#        if G_loglevel>40:
+        print sumidlist
+        print sumnamelist
+        print levlist
+      except Exception, e:
+        # ignore mistake
+        print "--- fellow players not found"
 
     # increase counter
     gamenum = gamenum - 1
@@ -459,6 +548,41 @@ def get_output_format(input):
   else:
     print "illegal value '"+input+"' for <output format>"
     sys.exit()
+
+def list_last_games_mode_1():
+  # mode 1
+  # get runtime parameters
+  try:
+    summoner_name = sys.argv[2]
+    region = sys.argv[3]
+    do_csv = sys.argv[4]
+    do_show_summoner_data=sys.argv[5]
+    G_loglevel = int(sys.argv[6])
+  except Exception, e:
+    usage(1)
+    sys.exit()
+
+  if do_csv == "y" or do_csv == "Y":
+    do_csv = True
+  else:
+    do_csv = False
+
+  if not do_csv:
+    print "human readable output, region '" + region + "', summoner '" \
+      + summoner_name + "', debug " + str(G_loglevel)
+    print " "
+
+  if do_show_summoner_data == "y" or do_show_summoner_data == "Y":
+    do_show_summoner_data = True
+  else:
+    do_show_summoner_data = False
+
+  # convert to id
+  id = getSummonerId(summoner_name, region)
+
+  # get stats
+  printSummonerGameList(id, region, do_csv, do_show_summoner_data)
+
 
 def collect_data_mode_2():
   # mode 2
@@ -520,9 +644,10 @@ def usage(mode):
   if mode==0 or mode==1:
 
     print "\n\n--- Mode 1: get last 10 games for a summoner ---"
-    print   "usage: " + sys.argv[0] + " 1 <name of summoner> <region> <csv> <loglevel>"
+    print   "usage: " + sys.argv[0] + " 1 <name of summoner> <region> <csv> <show summoners> <loglevel>"
     print  "   <csv>   - Y or y for Excel readable format"
     print  "           - any other value for human readable format"
+    print  "   <show summoners> - Y or y to display other summoners and levels"
 
   if mode==0 or mode==2:
     print "\n\n--- Mode 2: slowly gather game data ---"
@@ -553,38 +678,17 @@ if __name__ == '__main__':
     usage(0)
     sys.exit()
 
+  if mode==1:
+    # show last games
+    list_last_games_mode_1()
+
   if mode==2:
     # data collecting mode
     collect_data_mode_2()
-    sys.exit()
+
   elif mode==3:
     # read json data
     read_json_data_mode_3()
-    sys.exit()
 
-  # mode 1
-  # get runtime parameters
-  try:
-    summoner_name = sys.argv[2]
-    region = sys.argv[3]
-    do_csv = sys.argv[4]
-    G_loglevel = int(sys.argv[5])
-  except Exception, e:
-    usage(1)
-    sys.exit()
 
-  if do_csv == "y" or do_csv == "Y":
-    do_csv = True
-  else:
-    do_csv = False
 
-  if not do_csv:
-    print "human readable output, region '" + region + "', summoner '" \
-      + summoner_name + "', debug " + str(G_loglevel)
-    print " "
-
-  # convert to id
-  id = getSummonerId(summoner_name, region)
-
- # get stats
-  printSummonerGameList(id, region, do_csv)
