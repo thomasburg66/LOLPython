@@ -267,15 +267,20 @@ RUN_MODES = {
     1: {"LIST", "List games"},
     2: {"COLLECT", "Collect all games"},
     3: {"READJSON", "Read JSON file"},
-    4: {"SUMSEARCH", "Search for specific Summoner's games"}
+    4: {"SUMSEARCH", "Search for specific Summoner's games"},
+    5: {"CHAMPIONINFO", "Get Info for a specific Champion"}
 }
 
 RUN_MODE_LIST = 1
 RUN_MODE_COLLECT = 2
 RUN_MODE_READJSON = 3
 RUN_MODE_SUMSEARCH = 4
+RUN_MODE_CHAMPIONINFO = 5
 
 init()
+
+G_loglevel=99
+
 
 
 def Linefeed():
@@ -321,14 +326,14 @@ def getJSONResponse(region, context, url_end):
 
     jsonresponse = httpresponse.read()
     if G_loglevel > 70:
-        print "getJSONResponse3 context", context + ": json raw response is " + str(jsonresponse)
+        print "getJSONResponse3 context", context + ": json raw response is \n\n===== BEGIN JSON====\n\n" + str(jsonresponse) + "\n===== END JSON====\n\n"
 
     try:
         j1 = json.loads(jsonresponse)
     except Exception, e:
         return False, "JSonError" + str(e)
 
-    if G_loglevel > 60:
+    if G_loglevel > 80:
         print "getJSONResponse4 context", context + ": json pythonized resp is " + str(j1)
 
     return True, j1
@@ -339,6 +344,13 @@ def get_champion_name_static(id):
         if key == id:
             return value
     return "???"
+
+def get_champion_id_static(name):
+    for key, value in champion_names.items():
+        if value == name:
+            return key
+    return "???"
+
 
 
 '''
@@ -515,6 +527,36 @@ def printSummonerGameList(id, region, do_csv, do_show_summoner_data):
         # be a good LOL API citizen
         time.sleep(1 / 8)
 
+import sys
+def printf(format, *args):
+    sys.stdout.write(format % args)
+
+# /api/lol/static-data/{region}/v1.2/champion/{id}
+def process_champion_data(json_data,output_format):
+    # gather info
+    champ_name=json_data["name"]
+    champ_title=json_data["title"]
+    ally_tips=json_data["allytips"][0]
+    enemy_tips=json_data["enemytips"][0]
+    # some massaging on tags
+    tags_raw=json_data["tags"]
+    tags=""
+    for t in tags_raw:
+        tags=tags + " " + t
+
+    # print it
+    if output_format=="HUMAN":
+        if G_loglevel > 5:
+            print "\n\n============================================================================="
+
+        printf("%-10s,\"%-25s,\"%-20s\"\n", champ_name , champ_title, tags)
+
+        if G_loglevel > 5:
+            print "\n===Ally Tips ==="
+            print ally_tips
+
+            print "\n===Enemy Tips==="
+            print enemy_tips
 
 # /api/lol/{region}/v2.2/match/
 def process_match(mode, match_id, region, output_format, sumlist):
@@ -598,7 +640,7 @@ def list_last_games_mode_1():
         region = sys.argv[3]
         do_csv = sys.argv[4]
         do_show_summoner_data = sys.argv[5]
-        G_loglevel = int(sys.argv[6])
+        set_loglevel(int(sys.argv[6]))
     except Exception, e:
         usage(1)
         sys.exit()
@@ -627,14 +669,13 @@ def list_last_games_mode_1():
 
 def collect_data_mode_2():
     # mode 2
-    global G_loglevel
 
     try:
         starting_match_id = int(sys.argv[2])
         region = sys.argv[3]
         pull_interval_ms = int(sys.argv[4])
         output_format = get_output_format(sys.argv[5])
-        G_loglevel = int(sys.argv[6])
+        set_loglevel(int(sys.argv[6]))
     except Exception, e:
         usage(2)
         sys.exit()
@@ -649,12 +690,10 @@ def collect_data_mode_2():
 
 
 def read_json_data_mode_3():
-    # mode 3
-    global G_loglevel
 
     try:
         output_format = get_output_format(sys.argv[2])
-        G_loglevel = int(sys.argv[3])
+        set_loglevel(int(sys.argv[3]))
     except Exception, e:
         usage(3)
         sys.exit()
@@ -683,8 +722,6 @@ def read_json_data_mode_3():
 
 
 def collect_my_games_mode_4():
-    # mode 4
-    global G_loglevel
 
     # list of summoners to go through
     sumname_list = []
@@ -696,7 +733,7 @@ def collect_my_games_mode_4():
         region = sys.argv[4]
         pull_interval_ms = int(sys.argv[5])
         output_format = get_output_format(sys.argv[6])
-        G_loglevel = int(sys.argv[7])
+        set_loglevel(int(sys.argv[7]))
         for i in range(8, len(sys.argv)):
             sumname_list.append(sys.argv[i])
 
@@ -713,6 +750,49 @@ def collect_my_games_mode_4():
     pull_loop(RUN_MODE_SUMSEARCH, starting_match_id, ending_match_id,
               pull_interval_ms, region, output_format, sumname_list)
 
+def get_champion_info_5():
+
+    # list of summoners to go through
+    sumname_list = []
+
+    # get runtime args
+    try:
+        output_format = get_output_format(sys.argv[2])
+        set_loglevel(int(sys.argv[3]))
+        for i in range(4, len(sys.argv)):
+            sumname_list.append(sys.argv[i])
+
+    except Exception, e:
+        print "argv is ", sys.argv
+        print "argv.count() is ", len(sys.argv)
+        usage(5)
+        sys.exit()
+
+    print "--- mode 5 - collecting games for the following summoners: "
+    for s in sumname_list:
+        print "   ", s
+
+    # now do the work
+    for s in sumname_list:
+        # capitalize first character, find id
+        sumname=s[0].upper()+s[1:]
+        champion_id=get_champion_id_static(sumname)
+        if G_loglevel>40:
+            print sumname, "has id ", champion_id
+
+        # call JSNON to get info
+        region="euw"
+        url_end = "/"+region+"/v1.2/champion/"
+        url_end = url_end + str(champion_id) + "?champData=all"
+        url_end = url_end + "&" + get_api_key(region)
+        success, resp = getJSONResponse("global", "get_champion_name", url_end)
+        if not success:
+            print "oops - champion not found"
+            sys.exit()
+
+        # and process the info
+        process_champion_data(resp,output_format)
+
 
 def print_allowed_output_formats(mode):
     if mode == 1 or mode == 3 or mode == 5:
@@ -720,6 +800,9 @@ def print_allowed_output_formats(mode):
     elif mode == 2 or mode == 4:
         print "    <output format> can be CSV or HUMAN or JSON"
 
+def set_loglevel(level):
+    global G_loglevel
+    G_loglevel=level
 
 def usage(mode):
 
@@ -750,13 +833,14 @@ def usage(mode):
         print "\n\n--- Mode 4: gather game data for specific summoners ---"
         print "usage: " + sys.argv[0] + \
               " 4 <starting game id> <ending game id> <region> <pull interval[ms]> <output format> <loglevel>" \
-              "<sum1> [<sum2> ... <sumN>]"
+              "<sumname1> [<sumname2> ... <sumnameN>]"
         print_allowed_output_formats(4)
 
     if mode == 0 or mode == 5:
         print "\n\n--- Mode 5: gather info for a champion ---"
         print "usage: " + sys.argv[0] + \
-              " 5 <champion id> <output format> <loglevel>"
+              " 5 <output format> <loglevel>"
+        "<sumname1> [<sumname2> ... <sumnameN>]"
         print_allowed_output_formats(5)
 
     print "\n="
@@ -797,3 +881,6 @@ if __name__ == '__main__':
     elif mode == 4:
         # data collection: only for specific summoners
         collect_my_games_mode_4()
+
+    elif mode == 5:
+        get_champion_info_5()
