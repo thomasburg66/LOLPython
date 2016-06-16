@@ -533,30 +533,80 @@ def printf(format, *args):
 
 # /api/lol/static-data/{region}/v1.2/champion/{id}
 def process_champion_data(json_data,output_format):
-    # gather info
+    # gather simple info
     champ_name=json_data["name"]
     champ_title=json_data["title"]
     ally_tips=json_data["allytips"][0]
     enemy_tips=json_data["enemytips"][0]
+
     # some massaging on tags
     tags_raw=json_data["tags"]
     tags=""
     for t in tags_raw:
         tags=tags + " " + t
 
+    # Attack-Defense-Magic-Difficulty
+    attack=json_data["info"]["attack"]
+    defense=json_data["info"]["defense"]
+    magic=json_data["info"]["magic"]
+    difficulty=json_data["info"]["difficulty"]
+
+    # Spells - all four of it, just collect for now
+    spell_list=json_data["spells"]
+    i=0
+    spell_name_list=[]
+    spell_description_list=[]
+    spell_range_list=[]
+    for s in spell_list:
+        # spell properties
+        spell_name=s["name"]
+        spell_description=s["description"]
+        spell_range=s["rangeBurn"]
+
+        # store in list
+        spell_name_list.append(spell_name)
+        spell_description_list.append(spell_description)
+        spell_range_list.append(spell_range)
+
+        if G_loglevel>70:
+            print "Spell ",i,"name=",spell_name,"description=",spell_description,"range=",spell_range
+
+        i=i+1
+
     # print it
+    spellkeys = ['Q', 'W', 'E', 'R']
     if output_format=="HUMAN":
         if G_loglevel > 5:
             print "\n\n============================================================================="
 
-        printf("%-10s,\"%-25s,\"%-20s\"\n", champ_name , champ_title, tags)
+        printf("%-15s,%-25s,%-20s,ADMD=%d%d%d%d\n", champ_name , champ_title, tags,attack,defense,magic,difficulty)
 
+        # tips
         if G_loglevel > 5:
             print "\n===Ally Tips ==="
             print ally_tips
 
             print "\n===Enemy Tips==="
             print enemy_tips
+
+        # spells
+        cnt=0
+        if G_loglevel > 5:
+            print "\n===Spells    ==="
+            for nn,dd,rr in zip(spell_name_list,spell_description_list,spell_range_list):
+                printf("%s,%5s,%-15s,%-60s\n",spellkeys[cnt],rr,nn,dd)
+                cnt=cnt+1
+
+    elif output_format=="CSV":
+
+        # simple data
+        printf("%-15s,%-25s,%-20s,%d,%d,%d,%d,", champ_name , champ_title, tags,attack,defense,magic,difficulty)
+        # go through spells
+        cnt=0
+        for nn, dd, rr in zip(spell_name_list, spell_description_list, spell_range_list):
+            printf("%s,\"%s\",\"%s\",",  rr, nn, dd)
+            cnt = cnt + 1
+        print
 
 # /api/lol/{region}/v2.2/match/
 def process_match(mode, match_id, region, output_format, sumlist):
@@ -625,7 +675,7 @@ def pull_loop(mode, starting_match_id, ending_match_id, pull_interval_ms, region
 
 def get_output_format(input):
     input = input.upper();
-    if input == "JSON" or input == "TXT" or input == "HUMAN":
+    if input == "JSON" or input == "CSV" or input == "HUMAN":
         return input
     else:
         print "illegal value '" + input + "' for <output format>"
@@ -768,9 +818,23 @@ def get_champion_info_5():
         usage(5)
         sys.exit()
 
-    print "--- mode 5 - collecting games for the following summoners: "
-    for s in sumname_list:
-        print "   ", s
+    if sumname_list[0]=="*":
+        print "--- mode 5 - collection info for all champions"
+        # need to build list of all champions
+        sumname_list=[]
+        for key,value in champion_names.items():
+            sumname_list.append(value)
+    else:
+        print "--- mode 5 - collecting info for the following champions: "
+        for s in sumname_list:
+            print "   ", s
+
+    # title line if CSV
+    if output_format=="CSV":
+        printf("%-15s,%-25s ,%-20s ,%s,%s,%s,%s,", "Name" , "Title", "Type(s)","Att","Def","Mag","Diff",)
+        for cnt in xrange(0,4):
+            printf("%s,%s,%s,", "range", "name", "desc")
+        print
 
     # now do the work
     for s in sumname_list:
@@ -837,10 +901,10 @@ def usage(mode):
         print_allowed_output_formats(4)
 
     if mode == 0 or mode == 5:
-        print "\n\n--- Mode 5: gather info for a champion ---"
+        print "\n\n--- Mode 5: gather info for a champion or list of champions---"
         print "usage: " + sys.argv[0] + \
               " 5 <output format> <loglevel>"
-        "<sumname1> [<sumname2> ... <sumnameN>]"
+        print "<champ name1> [<champ name2> ... <champ nameN>] - or * for all champions"
         print_allowed_output_formats(5)
 
     print "\n="
