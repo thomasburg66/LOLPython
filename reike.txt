@@ -1,0 +1,11 @@
+#	When	Mi	GameType	SubType	Mode	LvlWon?	Champion	DamTC	GEarn	GSold	KMni	KTur	Kill	Deth	Asst
+ 1	"Wed Jul 08 21:33:08 2015"	30	MATCHED_GAME   	NORMAL              	CLASSIC   	30	True  	Varus          	13356	11490	10875	 179	   1	   4	   7	  11
+ 2	"Wed Jul 08 17:10:52 2015"	37	MATCHED_GAME   	NORMAL              	CLASSIC   	30	True  	Varus          	26731	16429	14585	 331	   0	   8	   2	   9
+ 3	"Tue Jul 07 21:46:40 2015"	24	MATCHED_GAME   	NORMAL              	CLASSIC   	30	False 	Vayne          	10145	 7593	 7685	 167	   0	   2	   4	   3
+ 4	"Tue Jul 07 21:14:17 2015"	26	MATCHED_GAME   	BOT                 	CLASSIC   	30	True  	Gangplank      	26317	18118	17108	 169	   0	  27	   1	   9
+ 5	"Mon Jul 06 21:30:29 2015"	20	MATCHED_GAME   	NORMAL              	CLASSIC   	30	True  	Vayne          	 7810	 7227	 6490	 132	   0	   3	   3	   4
+ 6	"Mon Jul 06 20:57:20 2015"	29	MATCHED_GAME   	BOT                 	CLASSIC   	30	True  	Cassiopeia     	 2909	 9308	 7790	 104	   1	   8	   2	   3
+ 7	"Mon Jul 06 19:40:18 2015"	36	MATCHED_GAME   	NORMAL              	CLASSIC   	30	False 	Vayne          	25286	13021	12875	 214	   0	   8	  11	  10
+ 8	"Mon Jul 06 18:42:49 2015"	24	MATCHED_GAME   	NORMAL              	CLASSIC   	30	False 	Vayne          	11112	 7942	 7615	 149	   0	   3	   6	   3
+ 9	"Mon Jul 06 18:11:18 2015"	20	MATCHED_GAME   	NORMAL              	CLASSIC   	30	False 	Vayne          	 7813	 5996	 5700	 118	   0	   3	   4	   1
+10	"Sun Jul 05 14:49:18 2015"	44	MATCHED_GAME   	NORMAL              	CLASSIC   	30	True  	Trundle        	18919	16396	14440	  34	   0	   4	   8	  20

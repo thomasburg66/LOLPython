@@ -1,0 +1,11 @@
+
+C:\Users\Thomas\Documents\Dev\LOLPython>c:\Python27\python.exe LOL_json_read1.py lgw2015us na y 0 
+#	When	Mins	GameType	SubType	Mode	Lvl	Won?	Champion	DamTC	GEarn	GSold	KMni	KTur	Kill	Deth	Asst
+10	"Thu Jul 09 23:09:39 2015"	43	MATCHED_GAME   	BOT                 	CLASSIC   	 5	True  	Ziggs          	 1751	11755	10575	 158	   1	   1	   8	  15
+ 9	"Thu Jul 09 22:20:12 2015"	17	MATCHED_GAME   	BOT                 	CLASSIC   	 5	True  	Ziggs          	  640	 4390	 2350	  51	   1	   0	   1	   0
+ 8	"Thu Jul 09 21:32:50 2015"	30	MATCHED_GAME   	NORMAL              	CLASSIC   	 4	False 	Ziggs          	 2112	 6827	 6900	  74	   0	   5	  10	   4
+ 7	"Thu Jul 09 20:32:07 2015"	39	MATCHED_GAME   	NORMAL              	CLASSIC   	 4	False 	Ziggs          	 1275	 7332	 5640	  89	   0	   1	  10	   1
+ 6	"Thu Jul 09 19:40:51 2015"	27	MATCHED_GAME   	NORMAL              	CLASSIC   	 3	True  	Ziggs          	 1301	 5591	 6255	  45	   0	   1	   9	   4
+ 5	"Thu Jul 09 10:08:30 2015"	24	MATCHED_GAME   	BOT                 	CLASSIC   	 3	True  	Garen          	  724	 4072	 3685	   2	   0	   0	   2	   1
+ 4	"Thu Jul 09 09:29:26 2015"	24	MATCHED_GAME   	BOT                 	CLASSIC   	 2	True  	Lux            	 1350	 4817	 4135	   4	   0	   0	   7	   5
+ 3	"Thu Jul 09 08:58:38 2015"	31	MATCHED_GAME   	BOT                 	CLASSIC   	 1	True  	Jinx           	 7143	11774	 7700	  50	   3	   7	   4	   9

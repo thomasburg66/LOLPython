@@ -1,0 +1,16 @@
+
+C:\Users\Thomas\Documents\Dev\LOLPython>c:\Python27\python.exe LOL_json_read1.py 1 martinlukas2 euw n 0 
+LOLPyth  version  1.31 - 12Jul2015
+human readable output, region 'euw', summoner 'martinlukas2', debug 0
+GameID     When                   Mins GameType        SubType              Mode      Lvl Won?   Champion        DamTC GEarn GSold KMni KTur Kill Deth Asst
+---------- ------------------------ -- --------        -------------------- --------  --- ---- ----------------  ----- ----- ----- ---- ---- ---- ---- ----
+2199213169 Mon Jul 13 14:16:28 2015 44 MATCHED_GAME    NORMAL               CLASSIC    10 False  Fizz            21682 17048 16360  148    1   21   12    3
+2198578511 Sun Jul 12 21:13:08 2015 44 MATCHED_GAME    NORMAL               CLASSIC    10 False  Fizz            11065 12406 11980  113    1   10   15    6
+2198535837 Sun Jul 12 20:03:53 2015 21 MATCHED_GAME    BOT                  ODIN       10 True   Fizz             6321 10706  9125   12    0    6    5    4
+2198464500 Sun Jul 12 19:38:33 2015 46 MATCHED_GAME    NORMAL               CLASSIC    10 True   Fizz             6319 12912 12820  102    2   10    5    5
+2198018017 Sun Jul 12 17:50:39 2015 18 MATCHED_GAME    ODIN_UNRANKED        ODIN       10 True   Fizz            13966 10721  9000   21    0   22    3    2
+2197930614 Sun Jul 12 17:21:38 2015 29 MATCHED_GAME    NORMAL               CLASSIC    10 False  Fizz             7833  8679  7515   40    1    8    4    5
+2197881921 Sun Jul 12 16:41:57 2015 31 MATCHED_GAME    NORMAL               CLASSIC    10 False  Fizz             2467  7218  5795   51    1    4    5    3
+2196776665 Sat Jul 11 19:16:27 2015 31 MATCHED_GAME    NORMAL               CLASSIC    10 True   Fizz             2032  7190  6120   45    0    3    6    0
+2196555613 Sat Jul 11 18:30:14 2015 35 MATCHED_GAME    NORMAL               CLASSIC    10 False  Fizz             5485 11501 10965  106    0   11    7    0
+2196534631 Sat Jul 11 17:46:25 2015 12 MATCHED_GAME    BOT                  ODIN       10 False  Azir              244  6269  5400   12    0    0    5    2

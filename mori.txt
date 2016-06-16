@@ -1,0 +1,11 @@
+#	When	Mi	GameType	SubType	Mode	LvlWon?	Champion	DamTC	GEarn	GSold	KMni	KTur	Kill	Deth	Asst
+ 1	"Thu Jul 09 00:46:19 2015"	19	MATCHED_GAME   	ARAM_UNRANKED_5x5   	ARAM      	30	True  	Tristana       	14186	10799	 8610	  40	   3	  13	  10	  18
+ 2	"Thu Jul 09 00:16:25 2015"	13	MATCHED_GAME   	ARAM_UNRANKED_5x5   	ARAM      	30	True  	Mordekaiser    	  517	 8981	 7630	  33	   0	  11	   7	  15
+ 3	"Wed Jul 08 00:21:53 2015"	34	MATCHED_GAME   	NORMAL              	CLASSIC   	30	False 	Graves         	18334	12592	11615	 170	   0	   8	   8	   9
+ 4	"Tue Jul 07 00:04:45 2015"	21	MATCHED_GAME   	NORMAL              	CLASSIC   	30	True  	Graves         	18062	11216	13690	 168	   4	  12	   3	   2
+ 5	"Mon Jul 06 23:29:19 2015"	43	MATCHED_GAME   	NORMAL              	CLASSIC   	30	False 	Varus          	27979	17367	16795	 286	   1	  10	  11	  11
+ 6	"Sun Jul 05 22:58:37 2015"	31	MATCHED_GAME   	RANKED_TEAM_5x5     	CLASSIC   	30	True  	Graves         	13806	13080	10300	 222	   2	   7	   5	   5
+ 7	"Sun Jul 05 22:18:54 2015"	41	MATCHED_GAME   	RANKED_TEAM_5x5     	CLASSIC   	30	False 	Varus          	34149	17199	15310	 233	   1	  14	  10	  15
+ 8	"Sun Jul 05 21:21:19 2015"	30	MATCHED_GAME   	RANKED_SOLO_5x5     	CLASSIC   	30	True  	Renekton       	12065	11968	10440	 242	   1	   4	   3	   7
+ 9	"Sun Jul 05 11:13:27 2015"	30	MATCHED_GAME   	NORMAL              	CLASSIC   	30	True  	Irelia         	19325	13644	13328	 197	   0	  10	   4	  12
+10	"Sun Jul 05 10:31:29 2015"	31	MATCHED_GAME   	ARAM_UNRANKED_5x5   	ARAM      	30	True  	Vladimir       	  655	17397	13930	 117	   0	  18	  12	  20
