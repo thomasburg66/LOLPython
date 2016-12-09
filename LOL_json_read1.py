@@ -241,7 +241,8 @@ champion_names = {
 # LOL API credentials
 api_keys = {
     "na": "268306a5-a526-4535-800c-623be8313f74",
-    "euw": "71be2bcb-e5de-4784-bede-3573498311f2"
+    "euw": "71be2bcb-e5de-4784-bede-3573498311f2",
+    "eune": "RGAPI-f6409faf-7de1-43dc-82b8-c83ff6877278"
 }
 
 http_method = "GET"
@@ -306,6 +307,8 @@ def getJSONResponse(region, context, url_end):
         full_url = "https://na.api.pvp.net/" + url_end
     elif region == "euw":
         full_url = "https://euw.api.pvp.net/" + url_end
+    elif region == "eune":
+        full_url = "https://eune.api.pvp.net/" + url_end
     elif region == "global":
         full_url = "https://global.api.pvp.net/api/lol/static-data" + url_end
     else:
@@ -509,22 +512,21 @@ def printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_da
             try:
                 player_list = game["fellowPlayers"]
                 sumidlist = "    sum ids:   "
-                sumnamelist = "    sum names: "
-                levlist = "    levels:    "
+                lev_and_playerlist = " sumname(level): "
                 for p in player_list:
                     thisid = p["summonerId"]
                     sumidlist = sumidlist + str(thisid) + ","
                     level, name = get_summoner_info_dynamic(thisid, region)
-                    levlist = levlist + str(level) + ","
-                    sumnamelist = sumnamelist + name + ","
+                    lev_and_playerlist=lev_and_playerlist+name+"("+str(level)+ ") / "
 
-                #        if G_loglevel>40:
                 print sumidlist
-                print sumnamelist
-                print levlist
+                print lev_and_playerlist
+                print ""
+
             except Exception, e:
                 # ignore mistake
                 print "--- fellow players not found"
+                print "Exception",e
 
         # increase counter
         games_found = games_found+1

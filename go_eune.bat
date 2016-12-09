@@ -1,0 +1,1 @@
+go 1 3 lgw2016eune eune human N 0
