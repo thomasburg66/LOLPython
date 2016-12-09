@@ -430,14 +430,14 @@ def printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_da
         sys.stdout.write('%s' % (Back.BLUE))
         print \
             "W GameID     When                   Mins GameType        " + \
-            "SubType              Mode     LvlL " \
-            "Champion     LvlC DamTC GEarn GSold KMni KTur Kill Deth Asst   IP"
+            "SubType              Mode       Lv D T Q P " \
+            "Champion    CL DamTC GEarn GSold KMni KTur Kill Deth Asst   IP"
 
     if not do_csv:
         print \
             "- ---------- ------------------------ -- ----------------" + \
-            "-------------------- -------- ---- " \
-            "----------   ---- ----- ----- ----- ---- ---- ---- ---- ---- ----"
+            "-------------------- ---------- -- ------- " \
+            "----------  -- ----- ----- ----- ---- ---- ---- ---- ---- ----"
         sys.stdout.write('%s' % (Back.RESET))
 
     games_found=0
@@ -488,8 +488,12 @@ def printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_da
             string.ljust(str(game["subType"]), 20) + SEP + \
             string.ljust(game["gameMode"], 10) + SEP + \
             string.rjust(str(game["level"]), 2) + SEP + \
+            string.rjust(str(safeGetStats(stats, "doubleKills" )), 1) + SEP + \
+            string.rjust(str(safeGetStats(stats, "tripleKills" )), 1) + SEP + \
+            string.rjust(str(safeGetStats(stats, "quadraKills" )), 1) + SEP + \
+            string.rjust(str(safeGetStats(stats, "pentaKills" )),  1) + SEP + \
             string.ljust(championName, 11) + SEP + \
-            string.rjust(str(safeGetStats(stats, "level")), 5) + SEP + \
+            string.rjust(str(safeGetStats(stats, "level")), 2) + SEP + \
             string.rjust(str(safeGetStats(stats, "physicalDamageDealtToChampions")), 5) + SEP + \
             string.rjust(str(safeGetStats(stats, "goldEarned")), 5) + SEP + \
             string.rjust(str(safeGetStats(stats, "goldSpent")), 5) + SEP + \
