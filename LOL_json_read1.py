@@ -234,7 +234,8 @@ champion_names = {
     "53": "Blitzcrank",
     "54": "Malphite",
     "254": "Vi",
-    "50": "Swain"
+    "50": "Swain",
+    "202": "Jhin"
 }
 
 # LOL API credentials
@@ -407,7 +408,7 @@ def safeGetStats(stats, value):
     return theResult
 
 
-def printSummonerGameList(id, region, do_csv, do_show_summoner_data):
+def printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_data):
     url1 = "api/lol/" + region + "/v1.3/game/by-summoner/"
     url2 = "/recent?" + get_api_key(region)
     url = url1 + str(id) + url2
@@ -430,16 +431,16 @@ def printSummonerGameList(id, region, do_csv, do_show_summoner_data):
         print \
             "W GameID     When                   Mins GameType        " + \
             "SubType              Mode     LvlL " \
-            "Champion    LvlC DamTC GEarn GSold KMni KTur Kill Deth Asst   IP"
+            "Champion     LvlC DamTC GEarn GSold KMni KTur Kill Deth Asst   IP"
 
     if not do_csv:
         print \
             "- ---------- ------------------------ -- ----------------" + \
             "-------------------- -------- ---- " \
-            "---------   ---- ----- ----- ----- ---- ---- ---- ---- ---- ----"
+            "----------   ---- ----- ----- ----- ---- ---- ---- ---- ---- ----"
         sys.stdout.write('%s' % (Back.RESET))
 
-    gamenum = 10
+    games_found=0
 
     for game in gamelist:
         if G_loglevel > 0:
@@ -487,7 +488,7 @@ def printSummonerGameList(id, region, do_csv, do_show_summoner_data):
             string.ljust(str(game["subType"]), 20) + SEP + \
             string.ljust(game["gameMode"], 10) + SEP + \
             string.rjust(str(game["level"]), 2) + SEP + \
-            string.ljust(championName, 10) + SEP + \
+            string.ljust(championName, 11) + SEP + \
             string.rjust(str(safeGetStats(stats, "level")), 5) + SEP + \
             string.rjust(str(safeGetStats(stats, "physicalDamageDealtToChampions")), 5) + SEP + \
             string.rjust(str(safeGetStats(stats, "goldEarned")), 5) + SEP + \
@@ -522,10 +523,14 @@ def printSummonerGameList(id, region, do_csv, do_show_summoner_data):
                 print "--- fellow players not found"
 
         # increase counter
-        gamenum = gamenum - 1
+        games_found = games_found+1
+
+        # bail out if done
+        if games_found >= games_to_list:
+            return
 
         # be a good LOL API citizen
-        time.sleep(1 / 8)
+        time.sleep(1 / 30)
 
 import sys
 def printf(format, *args):
@@ -686,11 +691,12 @@ def list_last_games_mode_1():
     # mode 1
     # get runtime parameters
     try:
-        summoner_name = sys.argv[2]
-        region = sys.argv[3]
-        do_csv = sys.argv[4]
-        do_show_summoner_data = sys.argv[5]
-        set_loglevel(int(sys.argv[6]))
+        games_to_list = sys.argv[2]
+        summoner_name = sys.argv[3]
+        region = sys.argv[4]
+        do_csv = sys.argv[5]
+        do_show_summoner_data = sys.argv[6]
+        set_loglevel(int(sys.argv[7]))
     except Exception, e:
         usage(1)
         sys.exit()
@@ -701,7 +707,7 @@ def list_last_games_mode_1():
         do_csv = False
 
     if not do_csv:
-        print "human readable output, region '" + region + "', summoner '" \
+        print "listing " + games_to_list + " games, human readable output, region '" + region + "', summoner '" \
               + summoner_name + "', debug " + str(G_loglevel)
         print " "
 
@@ -714,7 +720,7 @@ def list_last_games_mode_1():
     id = getSummonerId(summoner_name, region)
 
     # get stats
-    printSummonerGameList(id, region, do_csv, do_show_summoner_data)
+    printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_data)
 
 
 def collect_data_mode_2():
@@ -875,8 +881,8 @@ def usage(mode):
     print "="
 
     if mode == 0 or mode == 1:
-        print "\n\n--- Mode 1: get last 10 games for a summoner ---"
-        print   "usage: " + sys.argv[0] + " 1 <name of summoner> <region> <output format> <show summoners> <loglevel>"
+        print "\n\n--- Mode 1: get last <N> games for a summoner ---"
+        print   "usage: " + sys.argv[0] + " 1 <N> <name of summoner> <region> <output format> <show summoners> <loglevel>"
         print_allowed_output_formats(1)
         print  "           - any other value for human readable format"
         print  "   <show summoners> - Y or y to display other summoners and levels"

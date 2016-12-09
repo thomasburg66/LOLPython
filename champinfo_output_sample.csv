@@ -1,0 +1,12 @@
+Name           ,Title                     ,Type(s)              ,Att,Def,Mag,Diff
+Twisted Fate   ,'the Card Master          ,' Mage               ',6,2,6,9
+Ziggs          ,'the Hexplosives Expert   ,' Mage               ',2,4,9,4
+Sion           ,'The Undead Juggernaut    ,' Tank Fighter       ',5,9,3,5
+Urgot          ,'the Headsman's Pride     ,' Marksman Fighter   ',8,5,3,8
+Gnar           ,'the Missing Link         ,' Fighter Tank       ',6,5,5,8
+Garen          ,'The Might of Demacia     ,' Fighter Tank       ',7,7,1,5
+Teemo          ,'the Swift Scout          ,' Marksman Assassin  ',5,3,7,6
+Nautilus       ,'the Titan of the Depths  ,' Tank Fighter       ',4,6,6,6
+Blitzcrank     ,'the Great Steam Golem    ,' Tank Fighter       ',4,8,5,4
+Lux            ,'the Lady of Luminosity   ,' Mage Support       ',2,4,9,5
+Syndra         ,'the Dark Sovereign       ,' Mage Support       ',2,3,9,8
