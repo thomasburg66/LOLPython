@@ -430,15 +430,16 @@ def printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_da
         print "Won?\tGameID\tWhen\tMins\tGameType\tSubType\tMode\tLvlL" \
               "\tChampion\tLvlC\tDamTC\tGEarn\tGSold\tKMni\tKTur\tKill\tDeth\tAsst\tIP"
     else:
-        sys.stdout.write('%s' % (Back.BLUE))
+        sys.stdout.write('%s' % Style.BRIGHT)
+        sys.stdout.write('%s' % Back.BLUE)
         print \
-            "W GameID     When                   Mins GameType        " + \
+            "W Tm GameID     When                     GameType        " + \
             "SubType              Mode       Lv D T Q P " \
             "Champion    CL DamTC GEarn GSold KMni KTur Kill Deth Asst   IP"
 
     if not do_csv:
         print \
-            "- ---------- ------------------------ -- ----------------" + \
+            "- -- ---------- ------------------------ ----------------" + \
             "-------------------- ---------- -- ------- " \
             "----------  -- ----- ----- ----- ---- ---- ---- ---- ---- ----"
         sys.stdout.write('%s' % (Back.RESET))
@@ -473,6 +474,7 @@ def printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_da
 
         # win/loss in color
         winloss = string.ljust(str(stats["win"]), 6);
+        sys.stdout.write('%s' % Style.NORMAL)
         if winloss == "True  ":
             # green
             sys.stdout.write('%s' % (Back.GREEN))
@@ -484,9 +486,9 @@ def printSummonerGameList(games_to_list, id, region, do_csv, do_show_summoner_da
 
         print \
             winloss + SEP + \
+            minutes + SEP + \
             string.rjust(str(game["gameId"]), 2) + SEP + \
-            TXT + gametime + TXT + SEP + \
-            str(minutes) + SEP + \
+            string.rjust(gametime,3) + SEP + \
             string.ljust(str(game["gameType"]), 15) + SEP + \
             string.ljust(str(game["subType"]), 20) + SEP + \
             string.ljust(game["gameMode"], 10) + SEP + \
